@@ -1,0 +1,27 @@
+desklaunch (1.1.0-3) unstable; urgency=low
+
+  * New Upstream Maintainer
+  * New Maintainer
+
+ -- Stefan Pfetzing <dreamind@dreamind.de>  Mon, 10 Jun 2002 01:06:24 +0200
+
+desklaunch (1.1.0-2) unstable; urgency=low
+
+  * Changed Build-Depends and added xlibs-dev.
+    Closes: #113062
+  * Fixed a typo in the description field.
+    Closes: #113040
+
+ -- Brandon L. Griffith <brandon@debian.org>  Sat, 22 Sep 2001 19:24:21 -0400
+
+desklaunch (1.1.0-1) unstable; urgency=low
+
+  * Initial Release.
+  * Wrote a manpage since the program did not include one.
+  * Created a simple example_rc for the ../doc/examples directory.
+
+ -- Brandon L. Griffith <brandon@debian.org>  Fri, 14 Sep 2001 11:34:25 -0400
+
+Local variables:
+mode: debian-changelog
+End:

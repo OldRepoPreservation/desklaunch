@@ -1,0 +1,11 @@
+#
+# icon=
+# position:
+# /path/to/pixmap:
+# Icon name:
+# program-to-launch
+#
+
+icon=5:5:/usr/X11R6/include/X11/pixmaps/monitor.xpm:Terminal:x-terminal-emulator
+icon=5:60:/usr/share/pixmaps/emelfm.xpm:File Manager:emelfm
+icon=5:115:/usr/share/xmms/xmms.xpm:Xmms:xmms
