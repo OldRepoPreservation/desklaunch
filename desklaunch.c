@@ -266,7 +266,9 @@ void parse_rc(char *dir, char *file)
         }
       }
     }
+    fclose(rc);
   }
+  free(rc_file);
   do_update=0;
 }
 
