@@ -1,3 +1,11 @@
+desklaunch (1.1.1-1) unstable; urgency=low
+
+  * Fixed the handling of SIGHUP, now desklaunch reads the config
+    when it caught a SIGHUP, no stat'ing any more.
+    Closes: #149674
+
+ -- Stefan Pfetzing <dreamind@dreamind.de>  Tue, 11 Jun 2002 22:45:24 +0200
+
 desklaunch (1.1.0-3) unstable; urgency=low
 
   * New Upstream Maintainer

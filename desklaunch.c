@@ -78,7 +78,7 @@ Display *dpy;
 int screen;
 Window root;
 Icon *icon=NULL, *active_icon=NULL;
-time_t last_update;
+int do_update;
 Atom gnome[GNOME_HINT_COUNT], motif;
 
 /*
@@ -113,23 +113,6 @@ void set_mwm_hints(Window w, PropMwmHints *hints)
 #endif
 
   XChangeProperty(dpy, w, motif, motif, 32, PropModeReplace, (unsigned char *)hints, sizeof(*hints));
-}
-
-time_t get_last_update(char *dir, char *file)
-{
-  char *file_name;
-  struct stat stat_buf;
-
-  if((file_name=malloc(strlen(dir)+strlen(file)+2))==NULL)
-    print_error("Memory allocation failed.\n", True);
-
-  sprintf(file_name, "%s/%s", dir, file);
-
-  /* If no rc file then set time equal to last_update */
-  if(stat(file_name, &stat_buf))
-    stat_buf.st_mtime=last_update;
-  free(file_name);
-  return stat_buf.st_mtime;
 }
 
 /*
@@ -284,7 +267,7 @@ void parse_rc(char *dir, char *file)
       }
     }
   }
-  last_update=get_last_update(getenv("HOME"), RCFILE);
+  do_update=0;
 }
 
 void save_icons(char *dir, char *file)
@@ -309,7 +292,7 @@ void save_icons(char *dir, char *file)
       fprintf(rc, "icon=%d:%d:%s:%s:%s\n", i->x, i->y, i->pixmap_file, i->tooltip, i->command);
     fclose(rc);
   }
-  last_update=get_last_update(getenv("HOME"), RCFILE);
+  do_update=0;
 }
 
 /*
@@ -442,9 +425,11 @@ void signal_handler(int signal)
 
   switch(signal)
   {
+  case SIGHUP:
+    do_update=1;
+    break;
   case SIGINT:
   case SIGTERM:
-  case SIGHUP:
     quit();
     break;
   case SIGCHLD:
@@ -532,7 +517,7 @@ int main(int argc, char *argv[])
       }
     }
 
-    if(get_last_update(getenv("HOME"), RCFILE)!=last_update)
+    if(do_update)
     {
       free_icons();
       parse_rc(getenv("HOME"), RCFILE);
