@@ -49,35 +49,37 @@
 
 typedef struct
 {
-  unsigned long flags;
-  unsigned long functions;
-  unsigned long decorations;
-  unsigned long inputMode;
-  unsigned long status;
-} PropMwmHints;
+	unsigned long flags;
+	unsigned long functions;
+	unsigned long decorations;
+	unsigned long inputMode;
+	unsigned long status;
+}
+PropMwmHints;
 
 typedef struct _Icon Icon;
 
 struct _Icon
 {
-  Pixmap pixmap, mask;
-  int x, y, width, height;
-  Window window;
-  char *pixmap_file, *tooltip, *command;
-  Icon *next;
+	Pixmap pixmap, mask;
+	int x, y, width, height;
+	Window window;
+	char *pixmap_file, *tooltip, *command;
+	Icon *next;
 };
 
 struct
 {
-  Window window;
-  XFontStruct *font;
-  GC gc;
-} tooltip;
+	Window window;
+	XFontStruct *font;
+	GC gc;
+}
+tooltip;
 
 Display *dpy;
 int screen;
 Window root;
-Icon *icon=NULL, *active_icon=NULL;
+Icon *icon = NULL, *active_icon = NULL;
 int do_update;
 Atom gnome[GNOME_HINT_COUNT], motif;
 
@@ -86,33 +88,39 @@ Atom gnome[GNOME_HINT_COUNT], motif;
  * General functions
  *
  */
- 
-void print_error(char *error, int critical)
+
+void
+print_error (char *error, int critical)
 {
 #ifdef DEBUG
-  printf("print_error\n");
+	printf ("print_error\n");
 #endif
 
-  fprintf(stderr, "DESKLAUNCH: %s", error);
-  if(critical) exit(1);
+	fprintf (stderr, "DESKLAUNCH: %s", error);
+	if (critical)
+		exit (1);
 }
 
-void set_gnome_hint(Window w, int a, long value)
+void
+set_gnome_hint (Window w, int a, long value)
 {
 #ifdef DEBUG
-  printf("set_gnome_hint\n");
+	printf ("set_gnome_hint\n");
 #endif
 
-  XChangeProperty(dpy, w, gnome[a], XA_CARDINAL, 32, PropModeReplace, (unsigned char *)&value, 1);
+	XChangeProperty (dpy, w, gnome[a], XA_CARDINAL, 32, PropModeReplace,
+									 (unsigned char *) &value, 1);
 }
 
-void set_mwm_hints(Window w, PropMwmHints *hints)
+void
+set_mwm_hints (Window w, PropMwmHints * hints)
 {
 #ifdef DEBUG
-  printf("set_mwm_hints");
+	printf ("set_mwm_hints");
 #endif
 
-  XChangeProperty(dpy, w, motif, motif, 32, PropModeReplace, (unsigned char *)hints, sizeof(*hints));
+	XChangeProperty (dpy, w, motif, motif, 32, PropModeReplace,
+									 (unsigned char *) hints, sizeof (*hints));
 }
 
 /*
@@ -120,115 +128,130 @@ void set_mwm_hints(Window w, PropMwmHints *hints)
  * Icon functions
  *
  */
-void create_icon(char *icon_string)
+void
+create_icon (char *icon_string)
 {
-  XSetWindowAttributes attr;
-  XpmAttributes xpm_attr;
-  Icon *i;
-  Pixmap pixmap, mask;
-  int x=0, y=0;
-  char *rvalue=NULL, *pixmap_file=NULL, *text=NULL, *command=NULL;
-  XSizeHints size_hints;
-  PropMwmHints mwm_hints;
+	XSetWindowAttributes attr;
+	XpmAttributes xpm_attr;
+	Icon *i;
+	Pixmap pixmap, mask;
+	int x = 0, y = 0;
+	char *rvalue = NULL, *pixmap_file = NULL, *text = NULL, *command = NULL;
+	XSizeHints size_hints;
+	PropMwmHints mwm_hints;
 
 #ifdef DEBUG
-  printf("create_icon\n");
+	printf ("create_icon\n");
 #endif
 
-  rvalue=strtok(icon_string, ":");
-  if(rvalue)
-  {           
-    x=atoi(rvalue);
-    rvalue=strtok(NULL, ":");
-    if(rvalue)
-    {
-      y=atoi(rvalue);
-      pixmap_file=strtok(NULL, ":");
-      if(pixmap_file)
-      {
-        text=strtok(NULL, ":");
-        if(text)
-          command=strtok(NULL, "\n");
-      }
-    }
-  }
+	rvalue = strtok (icon_string, ":");
+	if (rvalue)
+		{
+			x = atoi (rvalue);
+			rvalue = strtok (NULL, ":");
+			if (rvalue)
+				{
+					y = atoi (rvalue);
+					pixmap_file = strtok (NULL, ":");
+					if (pixmap_file)
+						{
+							text = strtok (NULL, ":");
+							if (text)
+								command = strtok (NULL, "\n");
+						}
+				}
+		}
 
-  if(pixmap_file==NULL || text==NULL || command==NULL) return;
+	if (pixmap_file == NULL || text == NULL || command == NULL)
+		return;
 
-  xpm_attr.valuemask=XpmSize;
-  if(XpmReadFileToPixmap(dpy, root, pixmap_file, &pixmap, &mask, &xpm_attr)==0)
-  {
-    if((i=malloc(sizeof *i))==NULL)
-      print_error("Failed to allocate memory for icon.", True);
-    i->x=x;
-    i->y=y;
-    i->width=xpm_attr.width;
-    i->height=xpm_attr.height;
-    i->pixmap_file=strdup(pixmap_file);
-    i->tooltip=strdup(text);
-    i->command=strdup(command);
-    i->next=icon;
-    i->pixmap=pixmap;
-    i->mask=mask;
-    icon=i;
+	xpm_attr.valuemask = XpmSize;
+	if (XpmReadFileToPixmap (dpy, root, pixmap_file, &pixmap, &mask, &xpm_attr)
+			== 0)
+		{
+			if ((i = malloc (sizeof *i)) == NULL)
+				print_error ("Failed to allocate memory for icon.", True);
+			i->x = x;
+			i->y = y;
+			i->width = xpm_attr.width;
+			i->height = xpm_attr.height;
+			i->pixmap_file = strdup (pixmap_file);
+			i->tooltip = strdup (text);
+			i->command = strdup (command);
+			i->next = icon;
+			i->pixmap = pixmap;
+			i->mask = mask;
+			icon = i;
 
-    attr.event_mask=ButtonPressMask|ButtonReleaseMask|EnterWindowMask|LeaveWindowMask|StructureNotifyMask;
-    attr.override_redirect=False;
-    attr.background_pixel=0;
-    i->window=XCreateWindow(dpy, root, i->x, i->y, i->width, i->height, 0, DefaultDepth(dpy, screen), CopyFromParent, DefaultVisual(dpy, screen), CWOverrideRedirect|CWBackPixel|CWEventMask, &attr);
-    XSetWindowBackgroundPixmap(dpy, i->window, i->pixmap);
-    XShapeCombineMask(dpy, icon->window, ShapeBounding, 0, 0, i->mask, ShapeSet);
+			attr.event_mask =
+				ButtonPressMask | ButtonReleaseMask | EnterWindowMask |
+				LeaveWindowMask | StructureNotifyMask;
+			attr.override_redirect = False;
+			attr.background_pixel = 0;
+			i->window =
+				XCreateWindow (dpy, root, i->x, i->y, i->width, i->height, 0,
+											 DefaultDepth (dpy, screen), CopyFromParent,
+											 DefaultVisual (dpy, screen),
+											 CWOverrideRedirect | CWBackPixel | CWEventMask, &attr);
+			XSetWindowBackgroundPixmap (dpy, i->window, i->pixmap);
+			XShapeCombineMask (dpy, icon->window, ShapeBounding, 0, 0, i->mask,
+												 ShapeSet);
 
-    set_gnome_hint(i->window, WIN_STATE, WIN_STATE_STICKY);
-    set_gnome_hint(i->window, WIN_HINTS, WIN_HINTS_SKIP_FOCUS|WIN_HINTS_SKIP_TASKBAR|WIN_HINTS_SKIP_WINLIST);
-    set_gnome_hint(i->window, WIN_LAYER, 0);
+			set_gnome_hint (i->window, WIN_STATE, WIN_STATE_STICKY);
+			set_gnome_hint (i->window, WIN_HINTS,
+											WIN_HINTS_SKIP_FOCUS | WIN_HINTS_SKIP_TASKBAR |
+											WIN_HINTS_SKIP_WINLIST);
+			set_gnome_hint (i->window, WIN_LAYER, 0);
 
-    mwm_hints.flags=MWM_DECORATIONS;
-    mwm_hints.decorations=0;
-    set_mwm_hints(i->window, &mwm_hints);
+			mwm_hints.flags = MWM_DECORATIONS;
+			mwm_hints.decorations = 0;
+			set_mwm_hints (i->window, &mwm_hints);
 
-    size_hints.flags=PPosition;
-    XSetWMNormalHints(dpy, i->window, &size_hints);
+			size_hints.flags = PPosition;
+			XSetWMNormalHints (dpy, i->window, &size_hints);
 
-    XMapWindow(dpy, i->window);
-    XRaiseWindow(dpy, i->window);
-  }
-  else
-    print_error("Xpm file not found.", False);
+			XMapWindow (dpy, i->window);
+			XRaiseWindow (dpy, i->window);
+		}
+	else
+		print_error ("Xpm file not found.", False);
 }
 
-Icon *find_icon_from_window(Window w)
+Icon *
+find_icon_from_window (Window w)
 {
-  Icon *i;
+	Icon *i;
 
 #ifdef DEBUG
-  printf("find_icon_from_window\n");
+	printf ("find_icon_from_window\n");
 #endif
 
-  for(i=icon; i!=NULL; i=i->next)
-    if(i->window==w) return i;
-  return NULL;
+	for (i = icon; i != NULL; i = i->next)
+		if (i->window == w)
+			return i;
+	return NULL;
 }
 
-void free_icons()
+void
+free_icons ()
 {
-  Icon *i;
+	Icon *i;
 
 #ifdef DEBUG
-  printf("free_icons\n");
+	printf ("free_icons\n");
 #endif
 
-  while(icon)
-  {
-    XDestroyWindow(dpy, icon->window);
-    XFreePixmap(dpy, icon->pixmap);
-    XFreePixmap(dpy, icon->mask);
-    free(icon->pixmap_file);
-    free(icon->command);
-    i=icon->next;
-    free(icon);
-    icon=i;
-  }
+	while (icon)
+		{
+			XDestroyWindow (dpy, icon->window);
+			XFreePixmap (dpy, icon->pixmap);
+			XFreePixmap (dpy, icon->mask);
+			free (icon->pixmap_file);
+			free (icon->command);
+			i = icon->next;
+			free (icon);
+			icon = i;
+		}
 }
 
 /*
@@ -237,64 +260,68 @@ void free_icons()
  *
  */
 
-void parse_rc(char *dir, char *file)
+void
+parse_rc (char *dir, char *file)
 {
-  FILE *rc;
-  char *rc_file, buf[1024], *lvalue, *rvalue;
+	FILE *rc;
+	char *rc_file, buf[1024], *lvalue, *rvalue;
 
 #ifdef DEBUG
-  printf("parse_rc\n");
+	printf ("parse_rc\n");
 #endif
 
-  if((rc_file=malloc(strlen(dir)+strlen(file)+2))==NULL)
-    return;
- 
-  sprintf(rc_file, "%s/%s", dir, file); 
+	if ((rc_file = malloc (strlen (dir) + strlen (file) + 2)) == NULL)
+		return;
 
-  if((rc=fopen(rc_file, "r")))
-  {
-    while(fgets(buf, sizeof buf, rc))
-    {
-      lvalue=strtok(buf, "=");
-      if(lvalue)
-      {
-        if(!strcmp(lvalue, "icon"))
-        {
-          rvalue=strtok(NULL, "\n");
-          if(rvalue)
-            create_icon(rvalue);
-        }
-      }
-    }
-    fclose(rc);
-  }
-  free(rc_file);
-  do_update=0;
+	sprintf (rc_file, "%s/%s", dir, file);
+
+	if ((rc = fopen (rc_file, "r")))
+		{
+			while (fgets (buf, sizeof buf, rc))
+				{
+					lvalue = strtok (buf, "=");
+					if (lvalue)
+						{
+							if (!strcmp (lvalue, "icon"))
+								{
+									rvalue = strtok (NULL, "\n");
+									if (rvalue)
+										create_icon (rvalue);
+								}
+						}
+				}
+			fclose (rc);
+		}
+	free (rc_file);
+	do_update = 0;
 }
 
-void save_icons(char *dir, char *file)
+void
+save_icons (char *dir, char *file)
 {
-  char *rc_file;
-  Icon *i;
-  FILE *rc;
+	char *rc_file;
+	Icon *i;
+	FILE *rc;
 
 #ifdef DEBUG
-  printf("save_icons\n");
+	printf ("save_icons\n");
 #endif
 
-  if((rc_file=malloc(strlen(dir)+strlen(file)+2))==NULL)
-    return;
- 
-  sprintf(rc_file, "%s/%s", dir, file); 
+	if ((rc_file = malloc (strlen (dir) + strlen (file) + 2)) == NULL)
+		return;
 
-  if((rc=fopen(rc_file, "w")))
-  {
-    fprintf(rc, "#\n# .desklauchrc created automaticlly by desklaunch\n#\n");
-    for(i=icon;i;i=i->next)
-      fprintf(rc, "icon=%d:%d:%s:%s:%s\n", i->x, i->y, i->pixmap_file, i->tooltip, i->command);
-    fclose(rc);
-  }
-  do_update=0;
+	sprintf (rc_file, "%s/%s", dir, file);
+
+	if ((rc = fopen (rc_file, "w")))
+		{
+			fprintf (rc,
+							 "#\n# .desklauchrc created automaticlly by desklaunch\n#\n");
+			for (i = icon; i; i = i->next)
+				fprintf (rc, "icon=%d:%d:%s:%s:%s\n", i->x, i->y, i->pixmap_file,
+								 i->tooltip, i->command);
+			fclose (rc);
+		}
+	do_update = 0;
 }
 
 /*
@@ -302,27 +329,28 @@ void save_icons(char *dir, char *file)
  * Execute command
  *
  */
- 
-void fork_exec(char *cmd)
+
+void
+fork_exec (char *cmd)
 {
-  pid_t pid=fork();
+	pid_t pid = fork ();
 
 #ifdef DEBUG
-  printf("fork_exec\n");
-  printf("  executing %s\n", cmd);
+	printf ("fork_exec\n");
+	printf ("  executing %s\n", cmd);
 #endif
 
-  switch(pid)
-  {
-  case 0:
-    execlp("/bin/sh", "sh", "-c", cmd, NULL);
-    fprintf(stderr, "Exec failed.\n");
-    exit(0);
-    break;
-  case -1:
-    fprintf(stderr, "Fork failed.\n");
-    break;
-  }
+	switch (pid)
+		{
+		case 0:
+			execlp ("/bin/sh", "sh", "-c", cmd, NULL);
+			fprintf (stderr, "Exec failed.\n");
+			exit (0);
+			break;
+		case -1:
+			fprintf (stderr, "Fork failed.\n");
+			break;
+		}
 }
 
 /*
@@ -330,73 +358,82 @@ void fork_exec(char *cmd)
  * Event handlers
  *
  */
- 
-void event_enter_notify(XCrossingEvent *ev)
+
+void
+event_enter_notify (XCrossingEvent * ev)
 {
-  Icon *i;
-  int x, width, height;
+	Icon *i;
+	int x, width, height;
 
 #ifdef DEBUG
-  printf("event_enter_notify\n");
+	printf ("event_enter_notify\n");
 #endif
 
-  i=find_icon_from_window(ev->window);
+	i = find_icon_from_window (ev->window);
 
-  if(i)
-  {
-    width=XTextWidth(tooltip.font, i->tooltip, strlen(i->tooltip))+2;
-    height=tooltip.font->ascent+tooltip.font->descent+2;
-    x=i->x+(i->width/2)-(width/2)-1;
-    XMoveResizeWindow(dpy, tooltip.window, x, i->y+i->height+4, width, height);
-    XMapRaised(dpy, tooltip.window);
-    XDrawString(dpy, tooltip.window, tooltip.gc, 1, tooltip.font->ascent+1, i->tooltip, strlen(i->tooltip));
-    active_icon=i;
-  }
+	if (i)
+		{
+			width = XTextWidth (tooltip.font, i->tooltip, strlen (i->tooltip)) + 2;
+			height = tooltip.font->ascent + tooltip.font->descent + 2;
+			x = i->x + (i->width / 2) - (width / 2) - 1;
+			XMoveResizeWindow (dpy, tooltip.window, x, i->y + i->height + 4, width,
+												 height);
+			XMapRaised (dpy, tooltip.window);
+			XDrawString (dpy, tooltip.window, tooltip.gc, 1,
+									 tooltip.font->ascent + 1, i->tooltip, strlen (i->tooltip));
+			active_icon = i;
+		}
 }
 
-void event_leave_notify(XCrossingEvent *ev)
+void
+event_leave_notify (XCrossingEvent * ev)
 {
 #ifdef DEBUG
-  printf("event_leave_notify\n");
+	printf ("event_leave_notify\n");
 #endif
 
-  XClearWindow(dpy, tooltip.window);
-  XUnmapWindow(dpy, tooltip.window);
-  active_icon=NULL;
+	XClearWindow (dpy, tooltip.window);
+	XUnmapWindow (dpy, tooltip.window);
+	active_icon = NULL;
 }
 
-void event_button_release(XButtonEvent *ev)
+void
+event_button_release (XButtonEvent * ev)
 {
 #ifdef DEBUG
-  printf("event_button_release\n");
+	printf ("event_button_release\n");
 #endif
 
-  if(active_icon)
-  {
-    if(ev->window==active_icon->window && ev->button==Button1 && ev->state==256)
-      fork_exec(active_icon->command);
-  }
+	if (active_icon)
+		{
+			if (ev->window == active_icon->window && ev->button == Button1
+					&& (ev->state == Button1Mask
+							|| ev->state == (Button1Mask | LockMask)
+							|| ev->state == (Button1Mask | ShiftMask)))
+				fork_exec (active_icon->command);
+		}
 }
 
-void event_configure_notify(XConfigureEvent *ev)
+void
+event_configure_notify (XConfigureEvent * ev)
 {
-  Icon *i;
+	Icon *i;
 
 #ifdef DEBUG
-  printf("event_configure_notify\n");
+	printf ("event_configure_notify\n");
 #endif
 
-  i=find_icon_from_window(ev->window);
-  if(i)
-  {
-    if(i->x!=ev->x || i->y!=ev->y)
-    {
-      i->x=ev->x;
-      i->y=ev->y;
-      XUnmapWindow(dpy, tooltip.window);
-      save_icons(getenv("HOME"), RCFILE);
-    }
-  }
+	i = find_icon_from_window (ev->window);
+	if (i)
+		{
+			if (i->x != ev->x || i->y != ev->y)
+				{
+					i->x = ev->x;
+					i->y = ev->y;
+					XUnmapWindow (dpy, tooltip.window);
+					save_icons (getenv ("HOME"), RCFILE);
+				}
+		}
 }
 
 /*
@@ -404,84 +441,92 @@ void event_configure_notify(XConfigureEvent *ev)
  * Initialize and quit functions
  *
  */
- 
-void quit()
+
+void
+quit ()
 {
 #ifdef DEBUG
-  printf("quit\n");
+	printf ("quit\n");
 #endif
 
-  free_icons();
-  XDestroyWindow(dpy, tooltip.window);
-  XFreeFont(dpy, tooltip.font);
-  XFreeGC(dpy, tooltip.gc);
-  XCloseDisplay(dpy);
-  exit(0);
+	free_icons ();
+	XDestroyWindow (dpy, tooltip.window);
+	XFreeFont (dpy, tooltip.font);
+	XFreeGC (dpy, tooltip.gc);
+	XCloseDisplay (dpy);
+	exit (0);
 }
 
-void signal_handler(int signal)
+void
+signal_handler (int signal)
 {
 #ifdef DEBUG
-  printf("signal_handler\n");
+	printf ("signal_handler\n");
 #endif
 
-  switch(signal)
-  {
-  case SIGHUP:
-    do_update=1;
-    break;
-  case SIGINT:
-  case SIGTERM:
-    quit();
-    break;
-  case SIGCHLD:
-    wait(NULL);
-    break;
-  }
+	switch (signal)
+		{
+		case SIGHUP:
+			do_update = 1;
+			break;
+		case SIGINT:
+		case SIGTERM:
+			quit ();
+			break;
+		case SIGCHLD:
+			wait (NULL);
+			break;
+		}
 }
 
-void initialize()
+void
+initialize ()
 {
-  struct sigaction act;
-  XSetWindowAttributes attr;
-  XColor tooltip_col, dummyc;
-  XGCValues gcv;
+	struct sigaction act;
+	XSetWindowAttributes attr;
+	XColor tooltip_col, dummyc;
+	XGCValues gcv;
 
 #ifdef DEBUG
-  printf("initialize\n");
+	printf ("initialize\n");
 #endif
 
-  act.sa_handler=signal_handler;
-  act.sa_flags=0;
-  sigaction(SIGTERM, &act, NULL);
-  sigaction(SIGINT, &act, NULL);
-  sigaction(SIGHUP, &act, NULL);
-  sigaction(SIGCHLD, &act, NULL);
-  
-  if(!(dpy=XOpenDisplay(NULL)))
-    print_error("Can't open display, X may not be running.\n", True);
-    
-  screen=XDefaultScreen(dpy);
-  root=XDefaultRootWindow(dpy);
-  
-  XAllocNamedColor(dpy, DefaultColormap(dpy, screen), TOOLTIP_COL, &tooltip_col, &dummyc);
-  tooltip.font=XLoadQueryFont(dpy, TOOLTIP_FONT);
+	act.sa_handler = signal_handler;
+	act.sa_flags = 0;
+	sigaction (SIGTERM, &act, NULL);
+	sigaction (SIGINT, &act, NULL);
+	sigaction (SIGHUP, &act, NULL);
+	sigaction (SIGCHLD, &act, NULL);
 
-  attr.override_redirect=True;
-  attr.background_pixel=tooltip_col.pixel;
-  tooltip.window=XCreateWindow(dpy, root, 0, 0, 10, 10, 1, DefaultDepth(dpy, screen), CopyFromParent, DefaultVisual(dpy, screen), CWOverrideRedirect|CWBackPixel, &attr);
+	if (!(dpy = XOpenDisplay (NULL)))
+		print_error ("Can't open display, X may not be running.\n", True);
 
-  gcv.function=GXcopy;
-  gcv.foreground=0;
-  gcv.font=tooltip.font->fid;
-  tooltip.gc=XCreateGC(dpy, root, GCFunction|GCForeground|GCFont, &gcv);
+	screen = XDefaultScreen (dpy);
+	root = XDefaultRootWindow (dpy);
 
-  gnome[WIN_STATE]=XInternAtom(dpy, "_WIN_STATE", False);
-  gnome[WIN_HINTS]=XInternAtom(dpy, "_WIN_HINTS", False);
-  gnome[WIN_LAYER]=XInternAtom(dpy, "_WIN_LAYER", False);
-  motif=XInternAtom(dpy, "_MOTIF_WM_HINTS", False);
-  
-  parse_rc(getenv("HOME"), RCFILE);
+	XAllocNamedColor (dpy, DefaultColormap (dpy, screen), TOOLTIP_COL,
+										&tooltip_col, &dummyc);
+	tooltip.font = XLoadQueryFont (dpy, TOOLTIP_FONT);
+
+	attr.override_redirect = True;
+	attr.background_pixel = tooltip_col.pixel;
+	tooltip.window =
+		XCreateWindow (dpy, root, 0, 0, 10, 10, 1, DefaultDepth (dpy, screen),
+									 CopyFromParent, DefaultVisual (dpy, screen),
+									 CWOverrideRedirect | CWBackPixel, &attr);
+
+	gcv.function = GXcopy;
+	gcv.foreground = 0;
+	gcv.font = tooltip.font->fid;
+	tooltip.gc =
+		XCreateGC (dpy, root, GCFunction | GCForeground | GCFont, &gcv);
+
+	gnome[WIN_STATE] = XInternAtom (dpy, "_WIN_STATE", False);
+	gnome[WIN_HINTS] = XInternAtom (dpy, "_WIN_HINTS", False);
+	gnome[WIN_LAYER] = XInternAtom (dpy, "_WIN_LAYER", False);
+	motif = XInternAtom (dpy, "_MOTIF_WM_HINTS", False);
+
+	parse_rc (getenv ("HOME"), RCFILE);
 }
 
 /*
@@ -490,41 +535,48 @@ void initialize()
  *
  */
 
-int main(int argc, char *argv[])
+int
+main (int argc, char *argv[])
 {
-  initialize();
+	initialize ();
 
-  /* Event loop */
-  while(1)
-  {
-    XEvent ev;
+	/* Event loop */
+	while (1)
+		{
+			XEvent ev;
 
-    while(XPending(dpy))
-    {
-      XNextEvent(dpy, &ev);
-      switch(ev.type)
-      {
-      case EnterNotify:
-        event_enter_notify(&ev.xcrossing);
-        break;
-      case LeaveNotify:
-        event_leave_notify(&ev.xcrossing);
-        break;
-      case ButtonRelease:
-        event_button_release(&ev.xbutton);
-        break;
-      case ConfigureNotify:
-        event_configure_notify(&ev.xconfigure);
-        break;
-      }
-    }
+			while (XPending (dpy))
+				{
+					XNextEvent (dpy, &ev);
+					switch (ev.type)
+						{
+						case EnterNotify:
+							event_enter_notify (&ev.xcrossing);
+							break;
+						case LeaveNotify:
+							event_leave_notify (&ev.xcrossing);
+							break;
+						case ButtonRelease:
+							event_button_release (&ev.xbutton);
+							break;
+						case ConfigureNotify:
+							event_configure_notify (&ev.xconfigure);
+							break;
+						}
+				}
 
-    if(do_update)
-    {
-      free_icons();
-      parse_rc(getenv("HOME"), RCFILE);
-    }
-    usleep(250);
-  }
-  return 0;
+			if (do_update)
+				{
+					free_icons ();
+					parse_rc (getenv ("HOME"), RCFILE);
+				}
+			usleep (250);
+		}
+	return 0;
 }
+
+/**This must remain at the end of the file.**********
+ * vim600:set sw=2 ts=2:                            *
+ * vim600:set cindent cinoptions={1s,>2s,^-1s,n-1s: *
+ * vim600:set foldmarker={{{,}}} foldmethod=marker: * 
+ ****************************************************/

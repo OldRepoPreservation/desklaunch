@@ -1,3 +1,9 @@
+desklaunch (1.1.2-1) unstable; urgency=low
+
+  * Make desklaunch ignore the Lock modifier.
+
+ -- Stefan Pfetzing <dreamind@dreamind.de>  Wed, 31 Jul 2002 02:52:18 +0200
+
 desklaunch (1.1.1-1) unstable; urgency=low
 
   * Fixed the handling of SIGHUP, now desklaunch reads the config
@@ -29,7 +35,3 @@ desklaunch (1.1.0-1) unstable; urgency=low
   * Created a simple example_rc for the ../doc/examples directory.
 
  -- Brandon L. Griffith <brandon@debian.org>  Fri, 14 Sep 2001 11:34:25 -0400
-
-Local variables:
-mode: debian-changelog
-End:
