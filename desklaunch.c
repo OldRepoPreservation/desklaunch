@@ -524,7 +524,7 @@ int main(int argc, char *argv[])
       free_icons();
       parse_rc(getenv("HOME"), RCFILE);
     }
-    usleep(1);
+    usleep(250);
   }
   return 0;
 }
